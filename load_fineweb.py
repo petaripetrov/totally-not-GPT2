@@ -11,29 +11,33 @@ import os
 import multiprocessing as mp
 import numpy as np
 import tiktoken
+import pickle
 from datasets import load_dataset
+from transformers import AutoTokenizer
 from tqdm import tqdm
 
 # ------------------------------------------
-local_dir = "/data"
+local_dir = "/scratch/ppetrov1/totally-not-GPT2/data"
 remote_name = "sample-10BT"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 
 # create the cache if it doesn't exist yet
-DATA_CACHE_DIR = os.path.join(os.path.dirname(__file__), local_dir)
+DATA_CACHE_DIR = local_dir
 os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 
 # download the dataset
-fw = load_dataset("HuggingFaceFW/fineweb-edu", name=remote_name, split="train", cache_dir="/scratch/ppetrov1/hf_cache")
-
+# TODO modify this so it actually works and its not two scripts
+fw = load_dataset("HuggingFaceFW/fineweb-edu", name=remote_name, split="train", cache_dir="/scratch/ppetrov1/totally-not-GPT2/fineweb")
+#
 # init the tokenizer
-enc = tiktoken.get_encoding("gpt2")
-eot = enc._special_tokens['<|endoftext|>'] # end of text token
+enc = AutoTokenizer.from_pretrained("openai-community/gpt2", cache_dir="/scratch/ppetrov1/totally-not-GPT2/fineweb")
+#eot = enc._special_tokens['<|endoftext|>'] # end of text token
+eot = enc.eos_token_id
 
 def tokenize(doc):
     # tokenizes a single document and returns a numpy array of uint16 tokens
     tokens = [eot]
-    tokens.extend(enc.encode_ordinary(doc["text"]))
+    tokens.extend(enc.encode(doc["text"], add_special_tokens=False))
     tokens_np = np.array(tokens)
     assert (0 <= tokens_np).all() and (tokens_np < 2**16).all(), "token dictionary too large for uint16"
     tokens_np_uint16 = tokens_np.astype(np.uint16)
