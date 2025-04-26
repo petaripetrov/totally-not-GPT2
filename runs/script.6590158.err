@@ -1,8 +1,0 @@
-
-Lmod is automatically replacing "gcc/11.3.0" with "llvm/14.0.6".
-
-
-The following have been reloaded with a version change:
-  1) openblas/0.3.24_threads_openmp => openblas/0.3.24_threads_none
-  2) py-numpy/1.24.0 => py-numpy/1.26.1
-
