@@ -3,11 +3,11 @@ import time
 import math
 
 import torch
-import torch.distributed as dist
+# import torch.distributed as dist
 from data_loader import DataLoader
 from model import GPT, GPTConfig
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.distributed import init_process_group, destroy_process_group
+# from torch.distributed import init_process_group, destroy_process_group
 
 torch.cuda.empty_cache()
 RNG = 1337
