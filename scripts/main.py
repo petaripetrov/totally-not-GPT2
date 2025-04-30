@@ -1,4 +1,3 @@
-
 import os
 import time
 import math
@@ -11,10 +10,12 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 torch.cuda.empty_cache()
+RNG = 1337
+DATA_DIR = "data"
 
 # ___________________________________Set up DDP_____________________________________
-ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
-if ddp:
+#ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
+if False:
     assert torch.cuda.is_available(), "for now we need CUDA for DDP"
     init_process_group(backend='nccl')
     ddp_rank = int(os.environ['RANK'])
@@ -29,7 +30,7 @@ else:
     ddp_local_rank = 0
     ddp_world_size = 1
     master_process= True
-    
+
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda"
@@ -39,11 +40,11 @@ else:
 print(f"using device: {device}")
 device_type = "cuda" if device.startswith("cuda") else "cpu"
 
-torch.manual_seed(1337)
+torch.manual_seed(RNG)
 if torch.cuda.is_available():
-    torch.cuda.manual_seed(1337)
+    torch.cuda.manual_seed(RNG)
     
-total_batch_size = 524288 # we see (roughly) half a shard per batch
+total_batch_size = 524288 # 2**19, roughly 0.5M we see (roughly) half a shard per batch
 B = 8
 T = 1024
 assert total_batch_size % (B * T * ddp_world_size) == 0, "make sure total_batch_size is divisible by B * T * ddp_world_size"
@@ -52,8 +53,8 @@ if master_process:
     print(f"total desired batch size: {total_batch_size}")
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
 
-train_loader = DataLoader(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", data_root="/kaggle/input/finewebedu-5b")
-val_loader = DataLoader(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", data_root="/kaggle/input/finewebedu-5b")
+train_loader = DataLoader(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", data_root=DATA_DIR)
+val_loader = DataLoader(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", data_root=DATA_DIR)
 
 torch.set_float32_matmul_precision('high')
 
@@ -66,8 +67,8 @@ if ddp:
     
 raw_model = model.module if ddp else model # always contains the "raw" unwrapped model
 
-# max_steps = 9536 # We only load half of Fineweb-EDU due to drive constraints
-max_steps = 1000 # defo not enough but cant do more due to GPU compute constraints
+max_steps = 19073 # TODO bump this up as it only covers half the dataset right now
+# max_steps = 1000 # defo not enough but cant do more due to GPU compute constraints
 
 # optimize! the model
 # optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr, betas=(0.9, 0.95), eps=1e-8) # TODO read about AdamW
@@ -86,7 +87,7 @@ for step in range(max_steps):
     start = time.time()
     last_step = (step == max_steps -1)
     
-    if step % val_step == 0 or last_step: #abstract this into a property on the model config or other constant
+    if step % val_step == -1 or last_step: #abstract this into a property on the model config or other constant
         model.eval()
         val_loader.reset()
         

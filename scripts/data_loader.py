@@ -1,36 +1,35 @@
 import os
 import torch
-import tiktoken
 import numpy as np
 
 def load_tokens(filename):
     npt = np.load(filename)
     npt = npt.astype(np.int32)
     ptt = torch.tensor(npt, dtype=torch.long)
-    
+
     return ptt
 
 class DataLoader:
-    def __init__(self, B, T, process_rank, num_processes, split, data_root="edu_fineweb10B"):
+    def __init__(self, B, T, process_rank, num_processes, split, data_root="data"):
         self.B = B
         self.T = T
         self.process_rank = process_rank
         self.num_processes = num_processes
         self.is_master = process_rank == 0
         assert split in {'train', 'val'}, f"Invalid split {split}, must be train or val"
-        
+
         # load tokens from disk and store them in memory
         shards = os.listdir(data_root)
         shards = [s for s in shards if split in s]
         shards = sorted(shards)
         shards = [os.path.join(data_root, s) for s in shards]
         self.shards = shards
-        
+
         assert len(shards) > 0, f"no shards found for split: {split}"
         if self.is_master:
             print(f"found {len(shards)} shards for split: {split}")
         self.reset()
-        
+
     def reset(self):
         # init at shard zero
         self.current_shard = 0
