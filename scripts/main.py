@@ -14,8 +14,9 @@ RNG = 1337
 DATA_DIR = "data"
 
 # ___________________________________Set up DDP_____________________________________
-#ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
-if False:
+# ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
+ddp = False
+if ddp:
     assert torch.cuda.is_available(), "for now we need CUDA for DDP"
     init_process_group(backend='nccl')
     ddp_rank = int(os.environ['RANK'])
