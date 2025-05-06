@@ -1,7 +1,0 @@
-#python-dateutil>=2.9.0
-#idna>=3.10
-pandas>=2.2.3
-numpy>=2.2.5
-torch>=2.7.0
-
-

@@ -10,7 +10,7 @@ def load_tokens(filename):
     return ptt
 
 class DataLoader:
-    def __init__(self, B, T, process_rank, num_processes, split, data_root="data"):
+    def __init__(self, B, T, process_rank=0, num_processes=1, split='train', data_root="data"):
         self.B = B
         self.T = T
         self.process_rank = process_rank
