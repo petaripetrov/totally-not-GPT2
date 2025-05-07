@@ -80,7 +80,7 @@ class Block(nn.Module):
 
 class GPT(nn.Module):
 
-    def __init__(self, config: GPTConfig, process_rank: int):
+    def __init__(self, config: GPTConfig, process_rank: int = 0):
         super().__init__()
         self.config = config
         self.is_master = process_rank == 0
