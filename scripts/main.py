@@ -16,7 +16,9 @@ print(f"using device: {device}")
 torch.manual_seed(RNG)
 torch.cuda.manual_seed_all(RNG)
 
-train_loader = DataLoader(B=4, T=32)
+torch.set_float32_matmul_precision('high')
+
+train_loader = DataLoader(B=4, T=1024)
 
 model = GPT(GPTConfig())
 model.to(device)
