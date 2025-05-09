@@ -26,7 +26,7 @@ model = torch.compile(model)
 
 # optimize! the model
 # TODO read into AdamW and other optimizers
-optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+optimizer = model.configure_optimizers(weight_decay=0.1, learning_rate=18e-4, device=device)
 
 for i in range(50):
     t0 = time.time()
