@@ -18,10 +18,11 @@ torch.cuda.manual_seed_all(RNG)
 
 torch.set_float32_matmul_precision('high')
 
-train_loader = DataLoader(B=4, T=1024)
+train_loader = DataLoader(B=4, T=512)
 
 model = GPT(GPTConfig())
 model.to(device)
+model = torch.compile(model)
 
 # optimize! the model
 # TODO read into AdamW and other optimizers
