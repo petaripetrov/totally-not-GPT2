@@ -1,4 +1,5 @@
 import torch
+import time
 from data_loader import DataLoader
 from model import GPT, GPTConfig
 
@@ -25,6 +26,7 @@ model.to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
 
 for i in range(50):
+    t0 = time.time()
     x, y = train_loader.next_batch()
     x, y = x.to(device), y.to(device)
     
@@ -32,5 +34,9 @@ for i in range(50):
     logits, loss = model(x, y)
     loss.backward()
     optimizer.step()
+    torch.cuda.synchronize()
+    t1 = time.time()
     
-    print(f"step {i} | loss: {loss.item()}")
+    dt = (t1 - t0) * 1000 # time diff in miliseconds
+    
+    print(f"step {i} | loss: {loss.item()} | {dt:.2f}ms")
