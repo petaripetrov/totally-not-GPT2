@@ -10,3 +10,5 @@ log/
 fineweb
 script.sh
 
+test.py
+train_gpt2.py
