@@ -34,6 +34,10 @@ for i in range(50):
     
     optimizer.zero_grad()
     logits, loss = model(x, y)
+    
+    with torch.autocast(device_type=device, dtype=torch.bfloat16):
+        logits, loss = model(x, y)
+
     loss.backward()
     optimizer.step()
     torch.cuda.synchronize()
